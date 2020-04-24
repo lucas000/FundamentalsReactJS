@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { format, parseISO } from 'date-fns';
+
 import income from '../../assets/income.svg';
 import outcome from '../../assets/outcome.svg';
 import total from '../../assets/total.svg';
@@ -37,6 +39,7 @@ const Dashboard: React.FC = () => {
     async function loadTransactions(): Promise<void> {
       api.get('transactions').then(response => {
         setBalance(response.data.balance);
+        setTransactions(response.data.transactions);
       });
     }
 
@@ -89,18 +92,22 @@ const Dashboard: React.FC = () => {
             </thead>
 
             <tbody>
-              <tr>
-                <td className="title">Computer</td>
-                <td className="income">R$ 5.000,00</td>
-                <td>Sell</td>
-                <td>20/04/2020</td>
-              </tr>
-              <tr>
-                <td className="title">Website Hosting</td>
-                <td className="outcome">- R$ 1.000,00</td>
-                <td>Hosting</td>
-                <td>19/04/2020</td>
-              </tr>
+              {transactions.map(transaction => (
+                <tr key={transaction.id}>
+                  <td className="title">{transaction.title}</td>
+                  <td className={transaction.type}>
+                    {transaction.type === 'outcome' && '- '}
+                    {formatValue(Number(transaction.value))}
+                  </td>
+                  <td>{transaction.category.title}</td>
+                  <td>
+                    {format(
+                      parseISO(`${transaction.created_at}`),
+                      'dd/MM/yyyy',
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </TableContainer>
